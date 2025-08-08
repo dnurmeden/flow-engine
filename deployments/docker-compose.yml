@@ -1,0 +1,39 @@
+version: "3.9"
+name: flow-engine-dev
+services:
+  postgres:
+    image: postgres:16
+    container_name: flow-postgres
+    restart: unless-stopped
+    environment:
+      TZ: UTC
+      POSTGRES_USER: ${POSTGRES_USER:-flow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flowpass}
+      POSTGRES_DB: ${POSTGRES_DB:-flowdb}
+      # Локали по желанию:
+      # POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - flow_pg_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-flow} -d ${POSTGRES_DB:-flowdb}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  adminer:
+    image: adminer:4
+    container_name: flow-adminer
+    restart: unless-stopped
+    environment:
+      TZ: UTC
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  flow_pg_data:
