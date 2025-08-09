@@ -26,6 +26,21 @@ type ProcessInstance struct {
 	UpdatedAt    time.Time `db:"updated_at"`
 }
 
+type Task struct {
+	ID         int64
+	InstanceID int64
+	Type       string
+	Name       string
+	Status     string
+	Assignee   *string
+	Candidates []byte
+	DueAt      *time.Time
+	Payload    []byte
+	RetryCount int
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+
 type StartProcessRequest struct {
 	Key     string                 `json:"key"`
 	Version *int                   `json:"version,omitempty"`
@@ -35,4 +50,9 @@ type StartProcessRequest struct {
 type StartProcessResponse struct {
 	InstanceID int64  `json:"instance_id"`
 	Status     string `json:"status"`
+}
+
+type GetInstanceResponse struct {
+	Instance ProcessInstance `json:"instance"`
+	Tasks    []Task          `json:"tasks"`
 }
