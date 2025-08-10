@@ -50,3 +50,39 @@ func (h *Handler) GetInstance(c *gin.Context) {
 	// c.IndentedJSON(http.StatusOK, resp)
 	c.JSON(http.StatusOK, resp)
 }
+
+func (h *Handler) ClaimTask(c *gin.Context) {
+	taskID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	var req models.ClaimTaskRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.User == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user required"})
+		return
+	}
+	if err := h.process.ClaimTask(c, taskID, req.User); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func (h *Handler) CompleteTask(c *gin.Context) {
+	taskID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	var req models.CompleteTaskRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.User == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user required"})
+		return
+	}
+	if err := h.process.CompleteTask(c, taskID, req.User, req.Output); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

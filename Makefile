@@ -13,7 +13,14 @@ up:
 	docker compose -f deployments/docker-compose.yml --env-file $(ENV_FILE) up -d
 
 down:
-	docker compose -f deployments/docker-compose.yml --env-file $(ENV_FILE) down
+	docker compose -f deployments/docker-compose.yml --env-file $(ENV_FILE) down --remove-orphans
+
+nuke: ## остановить и удалить контейнер, сеть и volume
+	docker compose -f deployments/docker-compose.yml --env-file $(ENV_FILE) down --volumes --remove-orphans || true
+	-docker rm -f flow-postgres 2>/dev/null || true
+	-docker network prune -f
+
+reset-db: nuke up migrate-up
 
 logs:
 	docker compose -f deployments/docker-compose.yml logs -f
